@@ -1,0 +1,49 @@
+# Sanitised sample. Replace every <placeholder> before use.
+# See ./README.md for what each placeholder should contain.
+
+name: Create-Project-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none            # Manual only - never runs on commits
+pr: none
+
+parameters:
+  - name: ProjectName
+    displayName: "Project name"
+    type: string
+
+  - name: ProjectDescription
+    displayName: "Description (optional)"
+    type: string
+    default: " "
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  # Variable group must define ADO_PAT as a *secret* variable.
+  - group: <variable-group-name>
+  - name: OrgUrl
+    value: "https://dev.azure.com/<your-organisation-name>"
+
+jobs:
+  - job: CreateProject
+    displayName: "Create '${{ parameters.ProjectName }}'"
+    steps:
+      - checkout: self
+
+      - task: PowerShell@2
+        displayName: "Bootstrap ADO project"
+        env:
+          # Pass the secret via env var, not as an argument, so it never
+          # appears in the build logs.
+          ADO_PAT: $(ADO_PAT)
+        inputs:
+          filePath: scripts/New-Project.ps1
+          arguments: >
+            -OrgUrl             "$(OrgUrl)"
+            -Pat                "$env:ADO_PAT"
+            -ProjectName        "${{ parameters.ProjectName }}"
+            -ProjectDescription "${{ parameters.ProjectDescription }}"
+          pwsh: false                # Windows PowerShell 5.1 (matches local testing)
+          errorActionPreference: stop
+          failOnStderr: false
