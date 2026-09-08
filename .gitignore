@@ -1,0 +1,15 @@
+# General
+.alpackages/
+.alcache/
+.altemplates/
+.altestrunner/
+!app.json
+rad.json
+*.g.xlf
+.snapshots
+
+# Al Toolkit
+.github/
+tools/
+aldc.code-workspace
+aldc.yaml
